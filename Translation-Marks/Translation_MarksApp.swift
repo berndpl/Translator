@@ -9,9 +9,14 @@ import SwiftUI
 
 @main
 struct Translation_MarksApp: App {
+    @StateObject private var marksManager = MarksManager()
+    
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        MenuBarExtra("Translation Marks", image: "MenuBarIcon") {
+            MenuBarView()
+                .environmentObject(marksManager)
         }
+        .menuBarExtraStyle(.window)
     }
 }
+

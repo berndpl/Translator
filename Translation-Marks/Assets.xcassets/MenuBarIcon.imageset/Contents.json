@@ -1,0 +1,36 @@
+{
+  "images" : [
+    {
+      "filename" : "MenuBarIcon_22pt.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "MenuBarIcon_44pt.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "MenuBarIcon_120pt.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "filename" : "MenuBarIcon_240pt.png",
+      "idiom" : "universal",
+      "scale" : "4x"
+    },
+    {
+      "filename" : "MenuBarIcon_360pt.png",
+      "idiom" : "universal",
+      "scale" : "5x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "template-rendering-intent" : "template"
+  }
+}
