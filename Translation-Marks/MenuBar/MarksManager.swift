@@ -113,6 +113,28 @@ class MarksManager: ObservableObject {
                 await self?.handleCaptureAndProcess()
             }
         }
+        
+        keyboardShortcut.onShortcutReleased = { [weak self] in
+            // Cancel selection if modifiers are released without completing selection
+            Task { @MainActor in
+                await self?.cancelSelection()
+            }
+        }
+    }
+    
+    private func cancelSelection() async {
+        print("🎯 [MarksManager] Canceling selection due to modifier release")
+        // Cancel the selection in ScreenCaptureSelection
+        selection.cancelSelection()
+        
+        // Mark that we're no longer processing
+        await MainActor.run {
+            isProcessing = false
+            statusMessage = "Cancelled"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                self?.statusMessage = "Ready"
+            }
+        }
     }
     
     // MARK: - Main Workflow
@@ -220,8 +242,13 @@ class MarksManager: ObservableObject {
         // Step 1: Capture selected area
         guard let captureResult = await selection.captureSelectedArea() else {
             print("❌ [MarksManager] Screen capture cancelled or failed")
+            // Mark selection as completed to prevent cancellation callback
+            keyboardShortcut.markSelectionCompleted()
             return nil
         }
+        
+        // Mark selection as completed since we got a result
+        keyboardShortcut.markSelectionCompleted()
         
         let image = captureResult.image
         lastSelectedRegion = captureResult.screenRect

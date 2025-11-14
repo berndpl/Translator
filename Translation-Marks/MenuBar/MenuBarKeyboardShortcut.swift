@@ -6,104 +6,70 @@
 //
 
 import AppKit
-import Carbon
 
 class MenuBarKeyboardShortcut {
     var onShortcutPressed: (() -> Void)?
-    private var eventHandler: EventHandlerRef?
-    private var hotKeyRef: EventHotKeyRef?
+    var onShortcutReleased: (() -> Void)?
+    
+    private var eventMonitor: Any?
+    private var isModifiersPressed = false
+    private var isSelectionActive = false
     
     init() {
-        setupGlobalShortcut()
+        setupModifierMonitoring()
     }
     
     deinit {
-        if let eventHandler = eventHandler {
-            RemoveEventHandler(eventHandler)
-        }
-        if let hotKeyRef = hotKeyRef {
-            UnregisterEventHotKey(hotKeyRef)
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
         }
     }
     
-    private func setupGlobalShortcut() {
-        let eventSpec = [
-            EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
-        ]
-        
-        var hotKeyID = EventHotKeyID()
-        hotKeyID.signature = OSType(fourCharCodeFrom: "TRMK")
-        hotKeyID.id = 1
-        
-        let modifiers = UInt32(cmdKey | controlKey | optionKey)
-        let keyCode = UInt32(0x11) // 'T' key
-        
-        var hotKeyRef: EventHotKeyRef?
-        let status = RegisterEventHotKey(
-            keyCode,
-            modifiers,
-            hotKeyID,
-            GetApplicationEventTarget(),
-            0,
-            &hotKeyRef
-        )
-        
-        guard status == noErr, let ref = hotKeyRef else {
-            print("Failed to register hot key")
-            return
+    private func setupModifierMonitoring() {
+        // Monitor modifier key changes globally
+        eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged]) { [weak self] event in
+            self?.handleModifierChange(event: event)
         }
         
-        self.hotKeyRef = ref
-        
-        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
-        
-        let handlerStatus = InstallEventHandler(
-            GetApplicationEventTarget(),
-            { (nextHandler, theEvent, userData) -> OSStatus in
-                guard let userData = userData else { return OSStatus(eventNotHandledErr) }
-                
-                var hotKeyID = EventHotKeyID()
-                let status = GetEventParameter(
-                    theEvent,
-                    EventParamName(kEventParamDirectObject),
-                    EventParamType(typeEventHotKeyID),
-                    nil,
-                    MemoryLayout<EventHotKeyID>.size,
-                    nil,
-                    &hotKeyID
-                )
-                
-                guard status == noErr else { return status }
-                
-                let manager = Unmanaged<MenuBarKeyboardShortcut>.fromOpaque(userData).takeUnretainedValue()
-                DispatchQueue.main.async {
-                    manager.onShortcutPressed?()
-                }
-                
-                return noErr
-            },
-            1,
-            eventSpec,
-            selfPtr,
-            &eventHandler
-        )
-        
-        guard handlerStatus == noErr else {
-            print("Failed to install event handler")
-            return
+        // Also monitor locally for when app is active
+        NSEvent.addLocalMonitorForEvents(matching: [.flagsChanged]) { [weak self] event in
+            self?.handleModifierChange(event: event)
+            return event
         }
     }
-}
-
-// Extension for OSType
-extension OSType {
-    init(fourCharCodeFrom string: String) {
-        precondition(string.count == 4)
-        var result: UInt32 = 0
-        for char in string.utf8 {
-            result = (result << 8) + UInt32(char)
+    
+    private func handleModifierChange(event: NSEvent) {
+        let requiredModifiers: NSEvent.ModifierFlags = [.shift, .control, .option]
+        let currentModifiers = event.modifierFlags.intersection([.shift, .control, .option])
+        
+        let allModifiersPressed = currentModifiers.contains(.shift) && 
+                                  currentModifiers.contains(.control) && 
+                                  currentModifiers.contains(.option)
+        
+        if allModifiersPressed && !isModifiersPressed {
+            // All three modifiers just pressed together - start selection
+            isModifiersPressed = true
+            isSelectionActive = true
+            print("🎯 [MenuBarKeyboardShortcut] All modifiers pressed (SHIFT+CTRL+OPT), starting selection")
+            DispatchQueue.main.async { [weak self] in
+                self?.onShortcutPressed?()
+            }
+        } else if !allModifiersPressed && isModifiersPressed {
+            // One or more modifiers released
+            isModifiersPressed = false
+            if isSelectionActive {
+                print("🎯 [MenuBarKeyboardShortcut] Modifiers released, canceling selection")
+                isSelectionActive = false
+                DispatchQueue.main.async { [weak self] in
+                    self?.onShortcutReleased?()
+                }
+            }
         }
-        self = result
+    }
+    
+    /// Call this when a selection is completed to prevent cancellation on modifier release
+    func markSelectionCompleted() {
+        isSelectionActive = false
     }
 }
 

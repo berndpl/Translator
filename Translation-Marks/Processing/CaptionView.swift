@@ -14,6 +14,7 @@ struct CaptionView: View {
     let text: String
     @State private var isVisible: Bool = false
     @State private var displayText: String = ""
+    @State private var isDisappearing: Bool = false
     
     // Helper function to get JetBrains font with fallback
     private func getJetBrainsFont(size: CGFloat) -> Font {
@@ -49,8 +50,9 @@ struct CaptionView: View {
                 )
                 .padding(.horizontal, 40)
                 .opacity(isVisible ? 1.0 : 0.0)
-                .offset(y: isVisible ? 0 : 10)  // Move up when appearing, down when disappearing
-                .animation(.easeInOut(duration: 0.3), value: isVisible)
+                .offset(y: isVisible ? 0 : (isDisappearing ? -30 : 30))  // Appear from bottom (+30), disappear to top (-30)
+                .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3), value: isVisible)
+                .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3), value: isDisappearing)
                 .frame(minHeight: 80)  // Maintain minimum height to prevent collapse
             
             Spacer()
@@ -60,27 +62,32 @@ struct CaptionView: View {
         .onAppear {
             // Set display text immediately
             displayText = text
-            // Animate in: fade in + move up
-            withAnimation(.easeOut(duration: 0.3)) {
+            // Reset disappearing state
+            isDisappearing = false
+            // Animate in: fade in + move up from bottom with playful spring
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.2)) {
                 isVisible = true
             }
         }
         .onChange(of: text) { oldValue, newValue in
             if newValue.isEmpty {
-                // Disappear: fade out + move down (but keep text to maintain size)
-                withAnimation(.easeIn(duration: 0.3)) {
+                // Disappear: fade out + move up to top with playful spring
+                isDisappearing = true
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.6, blendDuration: 0.3)) {
                     isVisible = false
                 }
                 // Clear display text after animation completes
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     displayText = ""
+                    isDisappearing = false  // Reset for next appearance
                 }
             } else {
                 // Update display text immediately to maintain size
                 displayText = newValue
                 if !isVisible {
-                    // Appear: fade in + move up
-                    withAnimation(.easeOut(duration: 0.3)) {
+                    // Appear: fade in + move up from bottom with playful spring
+                    isDisappearing = false
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.2)) {
                         isVisible = true
                     }
                 }
