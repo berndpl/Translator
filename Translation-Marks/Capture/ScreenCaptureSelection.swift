@@ -441,15 +441,27 @@ struct SelectionOverlayView: View {
                 
                 // Instructions
                 VStack(spacing: 8) {
-                    // App icon
-                    Image("MenuBarIcon")
-                        .renderingMode(.template)
-                        .resizable()
-                        .interpolation(.high)
-                        .antialiased(true)
-                        .scaledToFit()
-                        .foregroundColor(.white)
-                        .frame(width: 120, height: 120)
+                    // App icon - use high resolution source image
+                    if let iconImage = loadHighResIcon() {
+                        Image(nsImage: iconImage)
+                            .renderingMode(.template)
+                            .resizable()
+                            .interpolation(.high)
+                            .antialiased(true)
+                            .scaledToFit()
+                            .foregroundColor(.white)
+                            .frame(width: 120, height: 120)
+                    } else {
+                        // Fallback to asset catalog
+                        Image("MenuBarIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .interpolation(.high)
+                            .antialiased(true)
+                            .scaledToFit()
+                            .foregroundColor(.white)
+                            .frame(width: 120, height: 120)
+                    }
                     
                     Text("Select area to translate")
                         .foregroundColor(.white)
@@ -495,5 +507,143 @@ struct SelectionOverlayView: View {
             }
         }
     }
+    
+    /// Loads the high-resolution icon (1024x1024) for crisp display
+    private func loadHighResIcon() -> NSImage? {
+        // Try loading from bundle resources first (if added to project)
+        if let image = NSImage(named: "MenuBarIcon_source") {
+            return image
+        }
+        
+        // Try loading from the Icons folder in the project
+        // This works during development, but for production we should add to asset catalog
+        guard let bundle = Bundle.main.resourceURL else { return nil }
+        
+        // Try source image (1024x1024)
+        let sourceURL = bundle.appendingPathComponent("../Icons/MenuBarIcon_source.png")
+        if FileManager.default.fileExists(atPath: sourceURL.path),
+           let image = NSImage(contentsOf: sourceURL) {
+            return image
+        }
+        
+        // Try template version (also 1024x1024)
+        let templateURL = bundle.appendingPathComponent("../Icons/MenuBarIcon_template.png")
+        if FileManager.default.fileExists(atPath: templateURL.path),
+           let image = NSImage(contentsOf: templateURL) {
+            return image
+        }
+        
+        return nil
+    }
+}
+
+#Preview("Selection Overlay - Idle") {
+    SelectionOverlayView(
+        onSelectionComplete: { rect in
+            print("Selection completed: \(rect)")
+        },
+        onCancel: {
+            print("Selection cancelled")
+        }
+    )
+    .frame(width: 1920, height: 1080)
+}
+
+#Preview("Selection Overlay - Active Selection") {
+    struct PreviewWrapper: View {
+        @State private var startPoint: CGPoint = CGPoint(x: 400, y: 300)
+        @State private var currentPoint: CGPoint = CGPoint(x: 800, y: 600)
+        
+        var body: some View {
+            GeometryReader { geometry in
+                ZStack {
+                    // Dimmed background
+                    Color.black.opacity(0.3)
+                    
+                    // Selection rectangle
+                    let rect = CGRect(
+                        x: min(startPoint.x, currentPoint.x),
+                        y: min(startPoint.y, currentPoint.y),
+                        width: abs(currentPoint.x - startPoint.x),
+                        height: abs(currentPoint.y - startPoint.y)
+                    )
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.yellow.opacity(0.1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.yellow, lineWidth: 2)
+                        )
+                        .frame(width: rect.width, height: rect.height)
+                        .position(x: rect.midX, y: rect.midY)
+                    
+                    // Instructions
+                    VStack(spacing: 8) {
+                        // App icon - use high resolution source image
+                        Group {
+                            if let iconImage = loadHighResIconForPreview() {
+                                Image(nsImage: iconImage)
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .interpolation(.high)
+                                    .antialiased(true)
+                                    .scaledToFit()
+                                    .foregroundColor(.white)
+                            } else {
+                                Image("MenuBarIcon")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .interpolation(.high)
+                                    .antialiased(true)
+                                    .scaledToFit()
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .frame(width: 120, height: 120)
+                        
+                        Text("Select area to translate")
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(8)
+                        Text("Press ESC to cancel")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.top, 4)
+                    }
+                }
+            }
+        }
+    }
+    
+    return PreviewWrapper()
+        .frame(width: 1920, height: 1080)
+}
+
+// Helper function for preview to load high-res icon
+private func loadHighResIconForPreview() -> NSImage? {
+    // Try loading from bundle resources first
+    if let image = NSImage(named: "MenuBarIcon_source") {
+        return image
+    }
+    
+    // Try loading from the Icons folder in the project
+    guard let bundle = Bundle.main.resourceURL else { return nil }
+    
+    // Try source image (1024x1024)
+    let sourceURL = bundle.appendingPathComponent("../Icons/MenuBarIcon_source.png")
+    if FileManager.default.fileExists(atPath: sourceURL.path),
+       let image = NSImage(contentsOf: sourceURL) {
+        return image
+    }
+    
+    // Try template version (also 1024x1024)
+    let templateURL = bundle.appendingPathComponent("../Icons/MenuBarIcon_template.png")
+    if FileManager.default.fileExists(atPath: templateURL.path),
+       let image = NSImage(contentsOf: templateURL) {
+        return image
+    }
+    
+    return nil
 }
 

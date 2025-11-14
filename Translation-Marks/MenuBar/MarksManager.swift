@@ -44,8 +44,6 @@ class MarksManager: ObservableObject {
     @Published var enableTextDetection = true
     @Published var enableOverlayDrawing = true
     @Published var enableScreenshotSaving = true
-    @Published var enableOverlayDisplay = false
-    @Published var enableOriginalTextSpeech = false
     @Published var enableTranslation = true
     @Published var enableTranslationSpeech = true
     @Published var enableCaptions = true {
@@ -160,20 +158,7 @@ class MarksManager: ObservableObject {
         
         print("✅ [MarksManager] Found \(textRegions.count) text regions")
         
-        // Step 2: Show overlay and read original text
-        if enableOverlayDisplay || enableOriginalTextSpeech {
-            await MainActor.run {
-                statusMessage = "Showing text regions..."
-            }
-            await showTextRegionsOverlayAndRead(
-                image: annotatedImage,
-                regions: textRegions,
-                showOverlay: enableOverlayDisplay,
-                readOriginal: enableOriginalTextSpeech
-            )
-        }
-        
-        // Step 3: Translate and read translation
+        // Step 2: Translate and read translation
         if enableTranslation || enableTranslationSpeech {
             await MainActor.run {
                 statusMessage = "Translating from Japanese to English..."
@@ -270,105 +255,6 @@ class MarksManager: ObservableObject {
             textRegions: textRegions,
             allText: allText
         )
-    }
-    
-    // MARK: - Overlay and Speech
-    
-    private func showTextRegionsOverlayAndRead(
-        image: NSImage,
-        regions: [TextRegion],
-        showOverlay: Bool,
-        readOriginal: Bool
-    ) async {
-        await withCheckedContinuation { continuation in
-            var hasResumed = false
-            let resumeOnce: () -> Void = {
-                if !hasResumed {
-                    hasResumed = true
-                    continuation.resume()
-                }
-            }
-            
-            DispatchQueue.main.async {
-                var window: NSWindow?
-                
-                // Create overlay window if enabled
-                if showOverlay {
-                    let imageSize = image.size
-                    window = NSWindow(
-                        contentRect: NSRect(x: 100, y: 100, width: imageSize.width, height: imageSize.height),
-                        styleMask: [.titled, .closable, .resizable],
-                        backing: .buffered,
-                        defer: false
-                    )
-                    
-                    window?.title = "Detected Text Regions (\(regions.count))"
-                    window?.level = .floating
-                    
-                    let overlayView = TextRegionsOverlayView(image: image, regions: regions) {
-                        window?.close()
-                        resumeOnce()
-                    }
-                    
-                    window?.contentView = NSHostingView(rootView: overlayView)
-                    window?.makeKeyAndOrderFront(nil)
-                    window?.center()
-                }
-                
-                // Read original text if enabled
-                if readOriginal {
-                    Task { [weak self] in
-                        guard let self = self else {
-                            if !showOverlay {
-                                resumeOnce()
-                            }
-                            return
-                        }
-                        
-                        await MainActor.run {
-                            self.statusMessage = "Reading original text..."
-                        }
-                        
-                        DispatchQueue.main.async {
-                            window?.title = "Detected Text Regions (\(regions.count)) - Reading original..."
-                        }
-                        
-                        for (index, region) in regions.enumerated() {
-                            print("🔊 [MarksManager] Reading region \(index + 1)/\(regions.count): \(region.text)")
-                            await self.speechService.speak(region.text)
-                            // Pause between regions
-                            try? await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds
-                        }
-                        
-                        DispatchQueue.main.async {
-                            window?.title = "Detected Text Regions (\(regions.count)) - Original read"
-                        }
-                        
-                        // Wait before closing
-                        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-                        
-                        DispatchQueue.main.async {
-                            window?.close()
-                            if !showOverlay {
-                                resumeOnce()
-                            }
-                        }
-                    }
-                } else if showOverlay {
-                    // Just show overlay, auto-close after delay
-                    Task {
-                        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                        DispatchQueue.main.async {
-                            window?.close()
-                            resumeOnce()
-                        }
-                    }
-                } else {
-                    // Neither overlay nor speech, resume immediately
-                    resumeOnce()
-                }
-            }
-        }
     }
 }
 
