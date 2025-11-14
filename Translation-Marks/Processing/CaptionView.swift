@@ -36,7 +36,7 @@ struct CaptionView: View {
             Spacer()
             
             Text(displayText.isEmpty ? " " : displayText)  // Use space to maintain size when empty
-                .font(getJetBrainsFont(size: 16))
+                //.font(getJetBrainsFont(size: 16))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(nil)  // Allow unlimited lines
@@ -50,7 +50,7 @@ struct CaptionView: View {
                 )
                 .padding(.horizontal, 40)
                 .opacity(isVisible ? 1.0 : 0.0)
-                .offset(y: isVisible ? 0 : (isDisappearing ? -30 : 30))  // Appear from bottom (+30), disappear to top (-30)
+                .offset(y: isVisible ? 0 : (isDisappearing ? -16 : 16))  // Appear from bottom (+30), disappear to top (-30)
                 .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3), value: isVisible)
                 .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3), value: isDisappearing)
                 .frame(minHeight: 80)  // Maintain minimum height to prevent collapse
