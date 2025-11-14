@@ -35,7 +35,7 @@ struct CaptionView: View {
             Spacer()
             
             Text(displayText.isEmpty ? " " : displayText)  // Use space to maintain size when empty
-                .font(getJetBrainsFont(size: 24))
+                .font(getJetBrainsFont(size: 16))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(nil)  // Allow unlimited lines

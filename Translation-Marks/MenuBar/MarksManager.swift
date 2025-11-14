@@ -39,6 +39,9 @@ class MarksManager: ObservableObject {
     @Published var isProcessing = false
     @Published var statusMessage = "Ready"
     
+    // Store the last selected region position for caption positioning
+    private var lastSelectedRegion: CGRect?
+    
     // MARK: - Feature Toggles (for debugging/isolating issues)
     @Published var enableCapture = true
     @Published var enableTextDetection = true
@@ -74,8 +77,14 @@ class MarksManager: ObservableObject {
             // Check enableCaptions on main thread since it's a @Published property
             Task { @MainActor in
                 if self.enableCaptions {
-                    print("📺 [MarksManager] Showing caption in status")
-                    self.captionService.showCaption(text)
+                    print("📺 [MarksManager] Showing caption above selected region")
+                    // Position caption above the selected region if available
+                    if let region = self.lastSelectedRegion {
+                        self.captionService.showCaption(text, aboveRegion: region)
+                    } else {
+                        // Fallback to default position
+                        self.captionService.showCaption(text)
+                    }
                 } else {
                     print("📺 [MarksManager] Captions disabled, not showing")
                 }
@@ -209,12 +218,15 @@ class MarksManager: ObservableObject {
         }
         
         // Step 1: Capture selected area
-        guard let image = await selection.captureSelectedArea() else {
+        guard let captureResult = await selection.captureSelectedArea() else {
             print("❌ [MarksManager] Screen capture cancelled or failed")
             return nil
         }
         
-        print("✅ [MarksManager] Screenshot captured, size: \(image.size)")
+        let image = captureResult.image
+        lastSelectedRegion = captureResult.screenRect
+        
+        print("✅ [MarksManager] Screenshot captured, size: \(image.size), region: \(captureResult.screenRect)")
         
         // Step 2: Detect text regions
         var textRegions: [TextRegion] = []

@@ -11,13 +11,18 @@ import ScreenCaptureKit
 import CoreMedia
 import CoreImage
 
+struct SelectionResult {
+    let image: NSImage
+    let screenRect: CGRect // Screen coordinates of the selected region
+}
+
 class ScreenCaptureSelection {
     private var selectionWindow: NSWindow?
-    private var continuation: CheckedContinuation<NSImage?, Never>?
+    private var continuation: CheckedContinuation<SelectionResult?, Never>?
     private var eventMonitor: Any?
     private let queue = DispatchQueue(label: "ScreenCaptureSelection.queue")
     
-    func captureSelectedArea() async -> NSImage? {
+    func captureSelectedArea() async -> SelectionResult? {
         // Clean up any existing state first
         await cleanup()
         
@@ -210,8 +215,12 @@ class ScreenCaptureSelection {
             self.continuation = nil // Clear immediately to prevent double resume
 
             Task {
-                let image = await self.captureScreenArea(rect: captureRect, screen: screen)
-                cont.resume(returning: image)
+                if let image = await self.captureScreenArea(rect: captureRect, screen: screen) {
+                    let result = SelectionResult(image: image, screenRect: captureRect)
+                    cont.resume(returning: result)
+                } else {
+                    cont.resume(returning: nil)
+                }
             }
         }
     }

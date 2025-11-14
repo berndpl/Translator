@@ -24,13 +24,19 @@ class CaptionService {
         // Private initializer for singleton
     }
     
-    func showCaption(_ text: String) {
+    func showCaption(_ text: String, aboveRegion region: CGRect? = nil) {
         print("📺 [CaptionService] showCaption called with text: '\(text.prefix(50))...'")
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.currentText = text
             self.ensureWindowExists()
+            
+            // Update window position if region is provided
+            if let region = region {
+                self.positionWindowAboveRegion(region)
+            }
+            
             self.updateCaption(text: text)
         }
     }
@@ -63,7 +69,7 @@ class CaptionService {
         let windowWidth: CGFloat = 800  // Wider for longer text
         let windowHeight: CGFloat = 200  // Taller to accommodate multiline text
         
-        // Position at center bottom of screen
+        // Default position at center bottom of screen (will be repositioned if region is provided)
         let x = screenFrame.midX - windowWidth / 2
         let y = screenFrame.height * 0.1  // 10% from bottom
         
@@ -105,6 +111,43 @@ class CaptionService {
         
         isInitialized = true
         print("📺 [CaptionService] Window created with SwiftUI view and retained")
+    }
+    
+    /// Positions the caption window above the selected region
+    private func positionWindowAboveRegion(_ region: CGRect) {
+        guard let window = captionWindow, let screen = NSScreen.main else {
+            print("⚠️ [CaptionService] Cannot position window - window or screen not available")
+            return
+        }
+        
+        let screenFrame = screen.frame
+        let windowWidth: CGFloat = 800
+        let windowHeight: CGFloat = 200
+        
+        // Convert region from screen coordinates (bottom-left origin) to window coordinates
+        // Region is in screen coordinates with bottom-left origin
+        // We want to position the caption above the region
+        let regionTop = region.origin.y + region.height
+        
+        // Position window centered horizontally above the region
+        let x = region.midX - windowWidth / 2
+        // Position above the region with some padding (20 points)
+        let y = regionTop
+        
+        // Ensure window stays on screen
+        let clampedX = max(screenFrame.minX, min(x, screenFrame.maxX - windowWidth))
+        let clampedY = min(y, screenFrame.maxY - windowHeight - 20) // Keep some margin from top
+        
+        // Set window frame (NSWindow uses bottom-left origin)
+        let newFrame = NSRect(
+            x: clampedX,
+            y: clampedY,
+            width: windowWidth,
+            height: windowHeight
+        )
+        
+        window.setFrame(newFrame, display: true)
+        print("📺 [CaptionService] Window positioned above region at (\(clampedX), \(clampedY))")
     }
     
     private func updateCaption(text: String) {
