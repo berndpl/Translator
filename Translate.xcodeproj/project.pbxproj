@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		89E3E5182EC5D937000A9C95 /* Translation-Marks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Translation-Marks.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		89E3E5182EC5D937000A9C95 /* Translate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Translate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		89E3E51A2EC5D937000A9C95 /* Translation-Marks */ = {
+		89E3E51A2EC5D937000A9C95 /* Translate */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Translation-Marks";
+			path = "Translate";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		89E3E50F2EC5D937000A9C95 = {
 			isa = PBXGroup;
 			children = (
-				89E3E51A2EC5D937000A9C95 /* Translation-Marks */,
+				89E3E51A2EC5D937000A9C95 /* Translate */,
 				89E3E5192EC5D937000A9C95 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		89E3E5192EC5D937000A9C95 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				89E3E5182EC5D937000A9C95 /* Translation-Marks.app */,
+				89E3E5182EC5D937000A9C95 /* Translate.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		89E3E5172EC5D937000A9C95 /* Translation-Marks */ = {
+		89E3E5172EC5D937000A9C95 /* Translate */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 89E3E5232EC5D939000A9C95 /* Build configuration list for PBXNativeTarget "Translation-Marks" */;
+			buildConfigurationList = 89E3E5232EC5D939000A9C95 /* Build configuration list for PBXNativeTarget "Translate" */;
 			buildPhases = (
 				89E3E5142EC5D937000A9C95 /* Sources */,
 				89E3E5152EC5D937000A9C95 /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				89E3E51A2EC5D937000A9C95 /* Translation-Marks */,
+				89E3E51A2EC5D937000A9C95 /* Translate */,
 			);
-			name = "Translation-Marks";
+			name = Translate;
 			packageProductDependencies = (
 			);
-			productName = "Translation-Marks";
-			productReference = 89E3E5182EC5D937000A9C95 /* Translation-Marks.app */;
+			productName = Translate;
+			productReference = 89E3E5182EC5D937000A9C95 /* Translate.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 89E3E5132EC5D937000A9C95 /* Build configuration list for PBXProject "Translation-Marks" */;
+			buildConfigurationList = 89E3E5132EC5D937000A9C95 /* Build configuration list for PBXProject "Translate" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				89E3E5172EC5D937000A9C95 /* Translation-Marks */,
+				89E3E5172EC5D937000A9C95 /* Translate */,
 			);
 		};
 /* End PBXProject section */
@@ -265,7 +265,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "de.plontsch.Translation-Marks";
+				PRODUCT_BUNDLE_IDENTIFIER = de.plontsch.Translate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -297,7 +297,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "de.plontsch.Translation-Marks";
+				PRODUCT_BUNDLE_IDENTIFIER = de.plontsch.Translate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -312,7 +312,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		89E3E5132EC5D937000A9C95 /* Build configuration list for PBXProject "Translation-Marks" */ = {
+		89E3E5132EC5D937000A9C95 /* Build configuration list for PBXProject "Translate" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				89E3E5212EC5D939000A9C95 /* Debug */,
@@ -321,7 +321,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		89E3E5232EC5D939000A9C95 /* Build configuration list for PBXNativeTarget "Translation-Marks" */ = {
+		89E3E5232EC5D939000A9C95 /* Build configuration list for PBXNativeTarget "Translate" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				89E3E5242EC5D939000A9C95 /* Debug */,

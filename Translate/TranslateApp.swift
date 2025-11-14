@@ -1,6 +1,6 @@
 //
-//  Translation_MarksApp.swift
-//  Translation-Marks
+//  TranslateApp.swift
+//  Translate
 //
 //  Created by Bernd Plontsch on 13.11.2025.
 //
@@ -8,11 +8,11 @@
 import SwiftUI
 
 @main
-struct Translation_MarksApp: App {
+struct TranslateApp: App {
     @StateObject private var marksManager = MarksManager()
     
     var body: some Scene {
-        MenuBarExtra("Translation Marks", image: "MenuBarIcon") {
+        MenuBarExtra("Translate", image: "MenuBarIcon") {
             MenuBarView()
                 .environmentObject(marksManager)
         }

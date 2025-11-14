@@ -27,7 +27,7 @@ class ScreenCaptureStorage {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH.mm.ss"
         let timestamp = formatter.string(from: Date())
-        let filename = "Translation-Marks \(timestamp).png"
+        let filename = "Translate \(timestamp).png"
         let fileURL = folderURL.appendingPathComponent(filename)
         
         // Convert NSImage to PNG data and save
